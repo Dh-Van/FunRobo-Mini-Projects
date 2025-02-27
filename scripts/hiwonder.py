@@ -16,6 +16,12 @@ WHEEL_RADIUS = 0.047  # meters
 BASE_LENGTH_X = 0.096  # meters
 BASE_LENGTH_Y = 0.105  # meters
 
+L1 = 15.5 * 0.01
+L2 = 9.9 * 0.01
+L3 = 9.5 * 0.01
+L4 = 5.5 * 0.01
+L5 = 10.5 * 0.01
+
 class HiwonderRobot:
     def __init__(self):
         """Initialize motor controllers, servo bus, and default robot states."""
@@ -90,15 +96,50 @@ class HiwonderRobot:
         Args:
             cmd (GamepadCmds): Contains linear velocities for the arm.
         """
+        J = np.zeros((5, 3))
+
         vel = [cmd.arm_vx, cmd.arm_vy, cmd.arm_vz]
 
-        ######################################################################
-        # insert your code for finding "thetalist_dot"
+        theta = self.joint_values[:5]
 
-        thetalist_dot = [0]*5
 
-        ######################################################################
+        DH = [
+            [theta[0], L1, 0, -90],
+            [theta[1] - 90, 0, L2, 180],
+            [theta[2], 0, L3, 180],
+            [theta[3] + 90, 0, 0, 90],
+            [theta[4], L4 + L5, 0, 0],
+        ]
 
+        T = np.stack(
+            [
+                ut.dh_to_matrix(DH[0]),
+                ut.dh_to_matrix(DH[1]),
+                ut.dh_to_matrix(DH[2]),
+                ut.dh_to_matrix(DH[3]),
+                ut.dh_to_matrix(DH[4]),
+            ],
+            axis=0,
+        )
+
+        T_cumulative = [np.eye(4)]
+        for i in range(5):
+            T_cumulative.append(T_cumulative[-1] @ T[i])
+
+        d = T_cumulative[-1] @ np.vstack([0, 0, 0, 1])
+
+        # Calculate the robot points by applying the cumulative transformations
+        for i in range(0, 5):
+            T_i = T_cumulative[i]
+            z = T_i @ np.vstack([0, 0, 1, 0])
+            d1 = T_i @ np.vstack([0, 0, 0, 1])
+            r = np.array([d[0] - d1[0], d[1] - d1[1], d[2] - d1[2]]).flatten()
+            J[i] = np.cross(z[:3].flatten(), r.flatten())
+            
+
+        J_inv = np.linalg.pinv(J)
+        thetalist_dot = np.dot(np.array(vel), J_inv)
+        thetalist_dot = np.append(thetalist_dot, 0.0)
 
         print(f'[DEBUG] Current thetalist (deg) = {self.joint_values}') 
         print(f'[DEBUG] linear vel: {[round(vel[0], 3), round(vel[1], 3), round(vel[2], 3)]}')
@@ -106,7 +147,7 @@ class HiwonderRobot:
 
         # Update joint angles
         dt = 0.5 # Fixed time step
-        K = 1600 # mapping gain for individual joint control
+        K = 10 # mapping gain for individual joint control
         new_thetalist = [0.0]*6
 
         # linear velocity control
