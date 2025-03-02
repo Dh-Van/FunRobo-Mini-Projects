@@ -1,63 +1,112 @@
-# Python Library for the Hiwonder 5-DOF Mobile Manipulator
+# Fundamentals of Robotics: Mini Project 1
 
-This repository provides the python libraries for interfacing with the Hiwonder 5-DOF mobile manipulator. The robot platform has an onboard **Raspberry Pi 4B** which serves as the main compute unit of the system. The 5-DOF arm are driven by serial bus servos controlled over serial while the mobile base is driven by DC motors controlled by a custom driver board with communication over I2C.
-
-Your project development will be done onboard the Raspberry Pi ideally over **SSH protocol**.
+## Robot Frame Figure
 
 
-<img src = "media/hiwonder.png" width="" height="400">
 
-## Setting up the onboard Raspberry Pi
+## DH Table
 
-#### Step 0: Connect to Raspberry Pi over SSH
-- Run `ssh funrobot@funrobot#.local` in terminal, replacing `#` with the number of your SD card.
-  [Find your SD card number](https://docs.google.com/spreadsheets/d/1oiZmZgGmFAW9nbCus0FoESnCpqEN_4TZb9X0I5U4Vjc/).
-  **The password is `FunR0b0!`** 
-- SSH troubleshooting:
-  - Make sure you are connected to the Olin Robotics network (It should work on Olin, but Olin Robotics may be faster/more stable).
-  - Make sure OpenSSH Client and OpenSSH Server are installed (should be installed by default on Mac/Linux, may need to be installed under `Settings > System > Optional Features` in Windows).
-  - Make sure the OpenSSH folder is added to your path. Should be `C:\Windows\System32\OpenSSH` in Windows.
-  - Check the SD card to make sure the number physically written on it matches what you expect.
+$$
+\left[ \begin{array}{cccc}
+\theta_1  & L_1  & 0 & -90\\
+\theta_2 -90 & 0 & L_2  & 180\\
+\theta_3  & 0 & L_3  & 180\\
+\theta_4 +90 & 0 & 0 & 90\\
+\theta_5  & L_4 +L_5  & 0 & 0
+\end{array} \right]
+$$
 
-#### Step 1: Create a virtual environment
-- We strongly recommend that you create a new python virtual environment for all your work on the platform.
-- Follow this [tutorial here](https://docs.python.org/3/tutorial/venv.html).
+## Forward Kinematics Equations
+
+The forward kinematics of the 5-DOF robot arm is computed using the homogeneous transformation matrices derived from the DH parameters. The transformation from one frame to the next is given by:
+
+$$
+T_i^{i+1} = 
+\begin{bmatrix} 
+\cos\theta_i & -\sin\theta_i\cos\alpha_i & \sin\theta_i\sin\alpha_i & a_i\cos\theta_i \\ 
+\sin\theta_i & \cos\theta_i\cos\alpha_i & -\cos\theta_i\sin\alpha_i & a_i\sin\theta_i \\ 
+0 & \sin\alpha_i & \cos\alpha_i & d_i \\ 
+0 & 0 & 0 & 1 
+\end{bmatrix}
+$$
+
+The full transformation from the base to the end-effector is obtained by multiplying the individual transformations:
+
+$$
+T_0^5 = T_0^1 T_1^2 T_2^3 T_3^4 T_4^5
+$$
+
+where each  $T_i^{i+1}$ is derived using the corresponding DH parameters.
+
+Using matrix multiplication, the final position and orientation of the end-effector relative to the base frame can be computed from $T_0^5$:
+
+$$
+T_0^5 =
+\begin{bmatrix} 
+R & d \\ 
+0 & 1 
+\end{bmatrix}
+$$
+
+where $R$ represents the rotation matrix and $P$ represents the position vector of the end-effector.
+
+## Jacobian Matrix Derivation
+
+To determine the linear velocity Jacobian $J_v$ for the 5-DOF robot arm, we use the standard Jacobian formulation:
+
+$$
+J_v = \begin{bmatrix} \frac{\partial x}{\partial \theta_1} & \frac{\partial x}{\partial \theta_2} & \dots & \frac{\partial x}{\partial \theta_5} \\ 
+                      \frac{\partial y}{\partial \theta_1} & \frac{\partial y}{\partial \theta_2} & \dots & \frac{\partial y}{\partial \theta_5} \\ 
+                      \frac{\partial z}{\partial \theta_1} & \frac{\partial z}{\partial \theta_2} & \dots & \frac{\partial z}{\partial \theta_5} 
+       \end{bmatrix}
+$$
+
+where each column corresponds to a joint and describes how the end-effector’s position $(x, y, z)$ changes with respect to the joint angles.
+
+### Derivation
+
+For the joints, the linear velocity contribution is given by:
+
+$$
+J_{v_i} = Z_{0}^{i} \times (P_5 - P_i)
+$$
+
+where:
+- $Z_{0}^{i}$ is the axis of rotation, obtained from the transformation matrix $T_0^i$ by multiplying with:
+
+  $$
+  Z_{0}^{i} = T_0^i \begin{bmatrix} 0 \\ 0 \\ 1 \\ 0 \end{bmatrix}
+  $$
+
+- $P_5$ is the end-effector position, extracted from $T_0^5$.  
+- $P_i$ is the position of joint $i$, extracted from $T_0^i$.  
+- $J_v$ is built by crossing $Z_{0}^{i}$ with $P_5 - P_i$ for each joint.
+
+The final Jacobian matrix for the linear velocity of the end-effector is:
+
+$$
+J_v =
+\begin{bmatrix} 
+Z_0^{1} \times (P_5 - P_1) \\ Z_0^{2} \times (P_5 - P_2) & \\ \dots & \\ Z_0^{5} \times (P_5 - P_5)
+\end{bmatrix}
+$$
+
+where each column represents the contribution of a joint to the linear velocity.
 
 
-#### Step 2: Get this repository from Github
-- I recommend you fork this repository to the account of one of your teammates and then you all can clone from the forked version.
-- Follow [this tutorial](https://ftc-docs.firstinspires.org/en/latest/programming_resources/tutorial_specific/android_studio/fork_and_clone_github_repository/Fork-and-Clone-From-GitHub.html) to understand how to fork and clone repositories
+## Code
 
+## Simulation Verification
 
-#### Step 3: Install all required Python packages
-```bash
-# first: make sure you have activated the virtual environment. See step 1 tutorial
+### Forward Position Kinematics
 
-# cd to the project folder
-$ cd hiwonder-armpi-pro
+### Forward Velocity Kinematics
 
-# install all required packages from requirements.txt
-$ pip install -r requirements.txt
-```
+#### Seperate Motion
 
+#### Combined Motion
 
-### How to Run
+## Gamepad Control
 
-- Before you run any script, please initialize the **pigpiod module**
-``` bash
-$ sudo pigpiod
-```
-
-- If setup worked well, you should be able to run the main script with the command below:
-``` bash
-$ sudo venv/bin/python main.py 
-# this runs the main script using admin privileges and the virtual environment's python interpreter.
-# N.B.: Please make sure you set the right path for your virtual environment's python interpreter above
-```
-
-### Usage Guide
-
-<img src = "media/jstick-manual-1.png" height="300"> 
-<img src = "media/jstick-manual-2.png" height="330">
-
+### Forward Velocity Kinematics
 
