@@ -100,9 +100,11 @@ class HiwonderRobot:
 
         vel = [cmd.arm_vx, cmd.arm_vy, cmd.arm_vz]
 
+        # Sets initial theta values to be the current joint angles
+        # This is needed to accurately calculate next theta values
         theta = self.joint_values[:5]
 
-
+        # DH Table derived above
         DH = [
             [theta[0], L1, 0, -90],
             [theta[1] - 90, 0, L2, 180],
@@ -111,6 +113,8 @@ class HiwonderRobot:
             [theta[4], L4 + L5, 0, 0],
         ]
 
+        # This vertically stacks the transformation matricies from the DH table
+        # T represents the transformation required to go from joint i-1 to joint i
         T = np.stack(
             [
                 ut.dh_to_matrix(DH[0]),
@@ -122,13 +126,15 @@ class HiwonderRobot:
             axis=0,
         )
 
+        # Computes the total transformation matricies to get from frame 0 to frame i
         T_cumulative = [np.eye(4)]
         for i in range(5):
             T_cumulative.append(T_cumulative[-1] @ T[i])
 
+        # Extracts the translational component to get from frame 0 to the end-effector frame
         d = T_cumulative[-1] @ np.vstack([0, 0, 0, 1])
 
-        # Calculate the robot points by applying the cumulative transformations
+        # Calculates the jacobian by crossing the distance to the end-effector and the z component of rotation
         for i in range(0, 5):
             T_i = T_cumulative[i]
             z = T_i @ np.vstack([0, 0, 1, 0])
@@ -136,9 +142,12 @@ class HiwonderRobot:
             r = np.array([d[0] - d1[0], d[1] - d1[1], d[2] - d1[2]]).flatten()
             J[i] = np.cross(z[:3].flatten(), r.flatten())
             
-
+        # Uses psuedoinverse to calculate inverse of jacobian
+        # This is done since the jacobian is not square
         J_inv = np.linalg.pinv(J)
+        # Multiplies the velocity vector by the inverse jacobian to get angular velocities of each joine
         thetalist_dot = np.dot(np.array(vel), J_inv)
+        # Add an extra entry at the end of the array to account for the end-effector opening and closing
         thetalist_dot = np.append(thetalist_dot, 0.0)
 
         print(f'[DEBUG] Current thetalist (deg) = {self.joint_values}') 
@@ -147,12 +156,13 @@ class HiwonderRobot:
 
         # Update joint angles
         dt = 0.5 # Fixed time step
+        K_vel = 1 # mapping gain for velocity control
         K = 10 # mapping gain for individual joint control
         new_thetalist = [0.0]*6
 
         # linear velocity control
         for i in range(5):
-            new_thetalist[i] = self.joint_values[i] + dt * thetalist_dot[i]
+            new_thetalist[i] = self.joint_values[i] + dt * K_vel * thetalist_dot[i]
         # individual joint control
         new_thetalist[0] += dt * K * cmd.arm_j1
         new_thetalist[1] += dt * K * cmd.arm_j2
