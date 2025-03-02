@@ -278,13 +278,24 @@ def set_arm_velocity(self, cmd: ut.GamepadCmds):
 
 ## Simulation Verification
 
+Click the images to view the videos
+
 ### Forward Position Kinematics
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/BF-zo-KBa6E?si=dJNso4pFBVwsNhz6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+[![Forward Position Kinematics](https://img.youtube.com/vi/BF-zo-KBa6E/0.jpg)](https://youtu.be/BF-zo-KBa6E)
 
-### Forward Velocity Kinematics
+### Velocity Kinematics
+
+#### Seperate Motion
+
+[![Velocity Kinematics - Seperate](https://img.youtube.com/vi/At33C4bG6Os/0.jpg)](https://youtu.be/At33C4bG6Os)
+
+#### Combined Motion
+
+[![Velocity Kinematics - Seperate](https://img.youtube.com/vi/FD_VS76iVvw/0.jpg)](https://youtu.be/FD_VS76iVvw)
 
 ## Gamepad Control
 
-### Forward Velocity Kinematics
+### Velocity Kinematics
 
+[![Velocity Kinematics - Gamepad](https://img.youtube.com/vi/mY3yonxwI5g/0.jpg)](https://www.youtube.com/watch?v=mY3yonxwI5g)
