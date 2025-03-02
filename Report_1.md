@@ -280,6 +280,8 @@ def set_arm_velocity(self, cmd: ut.GamepadCmds):
 
 ### Forward Position Kinematics
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/BF-zo-KBa6E?si=dJNso4pFBVwsNhz6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 ### Forward Velocity Kinematics
 
 ## Gamepad Control
