@@ -7,14 +7,14 @@
 ## DH Table
 
 $$
-\begin{array}{cccc}
- \theta & d & a & \alpha \\
- \hline
-\theta_1  & L_1  & 0 & -90\\
-\theta_2 -90 & 0 & L_2  & 180\\
-\theta_3  & 0 & L_3  & 180\\
-\theta_4 +90 & 0 & 0 & 90\\
-\theta_5  & L_4 + L_5  & 0 & 0
+\begin{array}{c|c|c|c|c}
+\text{Frame i to i+1} & \theta_i & d_i & a_i & \alpha_i \\
+\hline
+0 \to 1 & \theta_1  & L_1  & 0 & -90^\circ \\
+1 \to 2 & \theta_2 -90^\circ & 0 & L_2  & 180^\circ \\
+2 \to 3 & \theta_3  & 0 & L_3  & 180^\circ \\
+3 \to 4 & \theta_4 +90^\circ & 0 & 0 & 90^\circ \\
+4 \to 5 & \theta_5  & L_4 +L_5  & 0 & 0^\circ
 \end{array}
 $$
 
