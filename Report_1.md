@@ -1,11 +1,11 @@
 # Fundamentals of Robotics: Mini Project 1
-
+---
 ## Robot Frame Figure
-
+---
 
 
 ## DH Table
-
+---
 $$
 \begin{array}{c|c|c|c|c}
 \text{Frame i to i+1} & \theta_i & d_i & a_i & \alpha_i \\
@@ -21,7 +21,7 @@ $$
 The $\theta_2 - 90$ and $\theta_4 + 90$ expressions were added to account for initial arm position. 
 
 ## Forward Kinematics Equations
-
+---
 The forward kinematics of the 5-DOF robot arm is computed using the homogeneous transformation matrices derived from the DH parameters. The transformation from one frame to the next is given by:
 
 $$
@@ -55,7 +55,7 @@ $$
 where $R$ represents the rotation matrix and $P$ represents the position vector of the end-effector.
 
 ## Jacobian Matrix Derivation
-
+---
 To determine the linear velocity Jacobian $J_v$ for the 5-DOF robot arm, we use the standard Jacobian formulation:
 
 $$
@@ -68,7 +68,7 @@ $$
 where each column corresponds to a joint and describes how the end-effector’s position $(x, y, z)$ changes with respect to the joint angles.
 
 ### Derivation
-
+---
 For the joints, the linear velocity contribution is given by:
 
 $$
@@ -99,11 +99,11 @@ where each column represents the contribution of a joint to the linear velocity.
 
 
 ## Code
-
+---
 ### Simulation Functions
-
+---
 #### Forward Position Kinematics
-
+---
 ```python
 def calc_forward_kinematics(self, theta: list, radians=False):
     """
@@ -146,7 +146,7 @@ def calc_forward_kinematics(self, theta: list, radians=False):
 ```
 
 #### Velocity Kinematics
-
+---
 ```python
 def calc_velocity_kinematics(self, vel: list):
     """
@@ -188,9 +188,9 @@ def calc_velocity_kinematics(self, vel: list):
 ```
 
 ### Robot Functions
-
+---
 #### Velocity Kinematics
-
+---
 ```python
 def set_arm_velocity(self, cmd: ut.GamepadCmds):
     """Calculates and sets new joint angles from linear velocities.
@@ -281,25 +281,25 @@ def set_arm_velocity(self, cmd: ut.GamepadCmds):
 ```
 
 ## Simulation Verification
-
+---
 Click the images to view the videos
 
 ### Forward Position Kinematics
-
+---
 [![Forward Position Kinematics](https://img.youtube.com/vi/BF-zo-KBa6E/0.jpg)](https://youtu.be/BF-zo-KBa6E)
 
 ### Velocity Kinematics
-
+---
 #### Seperate Motion
-
+---
 [![Velocity Kinematics - Seperate](https://img.youtube.com/vi/At33C4bG6Os/0.jpg)](https://youtu.be/At33C4bG6Os)
 
 #### Combined Motion
-
+---
 [![Velocity Kinematics - Seperate](https://img.youtube.com/vi/FD_VS76iVvw/0.jpg)](https://youtu.be/FD_VS76iVvw)
 
 ## Gamepad Control
-
+---
 ### Velocity Kinematics
-
+---
 [![Velocity Kinematics - Gamepad](https://img.youtube.com/vi/mY3yonxwI5g/0.jpg)](https://www.youtube.com/watch?v=mY3yonxwI5g)
