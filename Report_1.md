@@ -2,6 +2,7 @@
 
 ## Robot Frame Figure
 
+![DH Table](media/DH%20Table.jpg)
 
 
 ## DH Table
