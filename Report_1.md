@@ -7,14 +7,18 @@
 ## DH Table
 
 $$
-\left[ \begin{array}{cccc}
+\begin{array}{cccc}
+ \theta & d & a & \alpha \\
+ \hline
 \theta_1  & L_1  & 0 & -90\\
 \theta_2 -90 & 0 & L_2  & 180\\
 \theta_3  & 0 & L_3  & 180\\
 \theta_4 +90 & 0 & 0 & 90\\
-\theta_5  & L_4 +L_5  & 0 & 0
-\end{array} \right]
+\theta_5  & L_4 + L_5  & 0 & 0
+\end{array}
 $$
+
+The $\theta_2 - 90$ and $\theta_4 + 90$ expressions were added to account for initial arm position. 
 
 ## Forward Kinematics Equations
 
