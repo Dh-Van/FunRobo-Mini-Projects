@@ -32,6 +32,10 @@ class GamepadControl:
         self.ARM_EE_FLAG = False
         self.ARM_HOME = False
         self.UTILITY_BTN = False
+        self.P1 = False
+        self.P2 = False
+        self.P3 = False
+        self.P4 = False
 
     
     def initialize_gamepad(self):
@@ -76,14 +80,15 @@ class GamepadControl:
             gamepad_cmds.arm_vy = self.map_value(self.abs_y, 0.1, -0.1)
             gamepad_cmds.arm_vz = self.map_value(self.abs_z, 0.1, -0.1)
 
-        gamepad_cmds.arm_j1 = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_J1_FLAG else 0.0
-        gamepad_cmds.arm_j2 = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_J2_FLAG else 0.0
-        gamepad_cmds.arm_j3 = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_J3_FLAG else 0.0
-        gamepad_cmds.arm_j4 = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_J4_FLAG else 0.0
-        gamepad_cmds.arm_j5 = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_J5_FLAG else 0.0
-        gamepad_cmds.arm_ee = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_EE_FLAG else 0.0
-        gamepad_cmds.arm_home = int(self.ARM_HOME)
-        gamepad_cmds.utility_btn = int(self.UTILITY_BTN)
+        # gamepad_cmds.arm_j1 = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_J1_FLAG else 0.0
+        # gamepad_cmds.arm_j2 = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_J2_FLAG else 0.0
+        # gamepad_cmds.arm_j3 = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_J3_FLAG else 0.0
+        # gamepad_cmds.arm_j4 = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_J4_FLAG else 0.0
+        # gamepad_cmds.arm_j5 = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_J5_FLAG else 0.0
+        # gamepad_cmds.arm_ee = self.map_value(self.abs_x, -0.1, 0.1) if self.ARM_EE_FLAG else 0.0
+        # gamepad_cmds.arm_home = int(self.ARM_HOME)
+        # gamepad_cmds.utility_btn = int(self.UTILITY_BTN)
+        gamepad_cmds.P1 = int(self.P1)
 
         self.gamepad_cmds_prev = gamepad_cmds
         return gamepad_cmds
@@ -97,14 +102,15 @@ class GamepadControl:
             # 'BTN_TL': ('MOBILE_BASE_FLAG', bool(event.state)),
             'BTN_TL': ('UTILITY_BTN', bool(event.state)),
             'BTN_TR': ('ARM_FLAG', bool(event.state)),
-            'BTN_WEST': ('ARM_J1_FLAG', bool(event.state)),
-            'BTN_EAST': ('ARM_J2_FLAG', bool(event.state)),
-            'BTN_SOUTH': ('ARM_J3_FLAG', bool(event.state)),
-            'BTN_NORTH': ('ARM_J4_FLAG', bool(event.state)),
+            'BTN_WEST': ('P1', bool(event.state)),
+            'BTN_EAST': ('P2', bool(event.state)),
+            'BTN_SOUTH': ('P3', bool(event.state)),
+            'BTN_NORTH': ('P4', bool(event.state)),
             'ABS_RZ': ('ARM_J5_FLAG', bool(event.state)),
             'ABS_Z': ('ARM_EE_FLAG', bool(event.state)),
             'BTN_SELECT': ('ARM_HOME', bool(event.state))
         }
+
 
         if event.code in code_map:
             setattr(self, code_map[event.code][0], code_map[event.code][1])

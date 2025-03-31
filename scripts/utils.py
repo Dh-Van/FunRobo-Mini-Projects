@@ -59,6 +59,16 @@ class EndEffector:
     roty: float = 0.0
     rotz: float = 0.0
 
+def wraptopi(angle_rad):
+  """Wraps an angle in radians to the range [-pi, pi).
+
+  Args:
+    angle_rad: The angle in radians.
+
+  Returns:
+    The wrapped angle in radians.
+  """
+  return (angle_rad + math.pi) % (2 * math.pi) - math.pi
 
 def rotm_to_euler(R) -> tuple:
     """Converts a rotation matrix to Euler angles (roll, pitch, yaw).
@@ -131,7 +141,7 @@ def rotm_to_euler(R) -> tuple:
     return roll, pitch, yaw
 
 
-def dh_to_matrix(dh_params: list) -> np.ndarray:
+def dh_to_matrix(dh_params: list, radians=True) -> np.ndarray:
     """Converts Denavit-Hartenberg parameters to a transformation matrix.
 
     Args:
@@ -141,8 +151,9 @@ def dh_to_matrix(dh_params: list) -> np.ndarray:
         np.ndarray: A 4x4 transformation matrix.
     """
     theta, d, a, alpha = dh_params
-    theta = np.radians(theta)
-    alpha = np.radians(alpha)
+    if(not radians):
+        theta = np.radians(theta)
+        alpha = np.radians(alpha)
     return np.array([
         [cos(theta), -sin(theta) * cos(alpha), sin(theta) * sin(alpha), a * cos(theta)],
         [sin(theta), cos(theta) * cos(alpha), -cos(theta) * sin(alpha), a * sin(theta)],

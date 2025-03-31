@@ -10,6 +10,7 @@ import numpy as np
 from board_controller import BoardController
 from servo_bus_controller import ServoBusController
 import utils as ut
+from arm_models import FiveDOFRobot
 
 # Robot base constants
 WHEEL_RADIUS = 0.047  # meters
@@ -36,6 +37,8 @@ class HiwonderRobot:
         ]
         self.joint_control_delay = 0.2 # secs
         self.speed_control_delay = 0.2
+
+        self.robot = FiveDOFRobot()
 
         self.move_to_home_position()
 
@@ -96,85 +99,10 @@ class HiwonderRobot:
         Args:
             cmd (GamepadCmds): Contains linear velocities for the arm.
         """
-        J = np.zeros((5, 3))
 
         vel = [cmd.arm_vx, cmd.arm_vy, cmd.arm_vz]
-
-        # Sets initial theta values to be the current joint angles
-        # This is needed to accurately calculate next theta values
-        theta = self.joint_values[:5]
-
-        # DH Table derived above
-        DH = [
-            [theta[0], L1, 0, -90],
-            [theta[1] - 90, 0, L2, 180],
-            [theta[2], 0, L3, 180],
-            [theta[3] + 90, 0, 0, 90],
-            [theta[4], L4 + L5, 0, 0],
-        ]
-
-        # This vertically stacks the transformation matricies from the DH table
-        # T represents the transformation required to go from joint i-1 to joint i
-        T = np.stack(
-            [
-                ut.dh_to_matrix(DH[0]),
-                ut.dh_to_matrix(DH[1]),
-                ut.dh_to_matrix(DH[2]),
-                ut.dh_to_matrix(DH[3]),
-                ut.dh_to_matrix(DH[4]),
-            ],
-            axis=0,
-        )
-
-        # Computes the total transformation matricies to get from frame 0 to frame i
-        T_cumulative = [np.eye(4)]
-        for i in range(5):
-            T_cumulative.append(T_cumulative[-1] @ T[i])
-
-        # Extracts the translational component to get from frame 0 to the end-effector frame
-        d = T_cumulative[-1] @ np.vstack([0, 0, 0, 1])
-
-        # Calculates the jacobian by crossing the distance to the end-effector and the z component of rotation
-        for i in range(0, 5):
-            T_i = T_cumulative[i]
-            z = T_i @ np.vstack([0, 0, 1, 0])
-            d1 = T_i @ np.vstack([0, 0, 0, 1])
-            r = np.array([d[0] - d1[0], d[1] - d1[1], d[2] - d1[2]]).flatten()
-            J[i] = np.cross(z[:3].flatten(), r.flatten())
-            
-        # Uses psuedoinverse to calculate inverse of jacobian
-        # This is done since the jacobian is not square
-        J_inv = np.linalg.pinv(J)
-        # Multiplies the velocity vector by the inverse jacobian to get angular velocities of each joine
-        thetalist_dot = np.dot(np.array(vel), J_inv)
-        # Add an extra entry at the end of the array to account for the end-effector opening and closing
-        thetalist_dot = np.append(thetalist_dot, 0.0)
-
-        print(f'[DEBUG] Current thetalist (deg) = {self.joint_values}') 
-        print(f'[DEBUG] linear vel: {[round(vel[0], 3), round(vel[1], 3), round(vel[2], 3)]}')
-        print(f'[DEBUG] thetadot (deg/s) = {[round(td,2) for td in thetalist_dot]}')
-
-        # Update joint angles
-        dt = 0.5 # Fixed time step
-        K_vel = 1 # mapping gain for velocity control
-        K = 10 # mapping gain for individual joint control
-        new_thetalist = [0.0]*6
-
-        # linear velocity control
-        for i in range(5):
-            new_thetalist[i] = self.joint_values[i] + dt * K_vel * thetalist_dot[i]
-        # individual joint control
-        new_thetalist[0] += dt * K * cmd.arm_j1
-        new_thetalist[1] += dt * K * cmd.arm_j2
-        new_thetalist[2] += dt * K * cmd.arm_j3
-        new_thetalist[3] += dt * K * cmd.arm_j4
-        new_thetalist[4] += dt * K * cmd.arm_j5
-        new_thetalist[5] = self.joint_values[5] + dt * K * cmd.arm_ee
-
-        new_thetalist = [round(theta,2) for theta in new_thetalist]
-        print(f'[DEBUG] Commanded thetalist (deg) = {new_thetalist}')       
-        
-        # set new joint angles
+        new_thetalist = self.robot.calc_velocity_kinematics(vel)
+        new_thetalist = np.append(new_thetalist, 0)
         self.set_joint_values(new_thetalist, radians=False)
 
 
