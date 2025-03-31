@@ -29,7 +29,7 @@ class FiveDOFRobot():
         self.l5 = 10.5 * 0.01
         
         # Joint angles (initialized to zero)
-        self.theta = [0, 0, 90, -30, 0]  # degrees
+        self.theta = [0, 0, np.pi/2, -np.pi/3, 0]  # degrees
         
         # Joint limits (in radians)
         self.theta_limits = [
@@ -93,14 +93,14 @@ class FiveDOFRobot():
         # Calculate robot points (positions of joints)
         self.calc_robot_points()
 
+        return self.theta
+
 
     def check_limits(self, angles):
         for i, angle in enumerate(angles):
             if(angle < self.theta_limits[i][0] and angle > self.theta_limits[i][1]):
                 return False
         return True
-
-
 
     def calc_inverse_kinematics(self, EE: ut.EndEffector, soln=0):
         """
@@ -167,7 +167,7 @@ class FiveDOFRobot():
         sols = sorted_indices[:2]
         sol = sols[soln]
 
-        self.calc_forward_kinematics(solutions[sol, :], radians=True)
+        return self.calc_forward_kinematics(solutions[sol, :], radians=True)
 
     def calc_jacobian(self):
         self.DH = [
@@ -238,7 +238,7 @@ class FiveDOFRobot():
             vel: Desired end-effector velocity (3x1 vector).
         """
         
-
+        # print(vel)
         # Computes the total transformation matricies to get from frame 0 to frame i
         T_cumulative = [np.eye(4)]
         for i in range(self.num_dof):
@@ -262,18 +262,15 @@ class FiveDOFRobot():
         theta_dot = np.dot(np.array(vel), J_inv)
         
         # Control cycle time step
-        dt = 0.01
+        dt = 0.5
         # Calculates next theta values by multiplying angular velocities by time step
-        self.theta = self.theta + (theta_dot * dt)
+        self.theta = self.theta + (theta_dot * dt) * 0.25
         # Calls forward kinematics with new theta values
         self.calc_forward_kinematics(self.theta, radians=True)
 
-        return self.theta
-
-
     def calc_robot_points(self):
         """ Calculates the main arm points using the current joint angles """
-
+        self.calc_jacobian()
         # Initialize points[0] to the base (origin)
         self.points[0] = np.array([0, 0, 0, 1])
 
@@ -300,3 +297,5 @@ class FiveDOFRobot():
         # Calculate the EE axes in space (in the base frame)
         self.EE = [self.ee.x, self.ee.y, self.ee.z]
         self.EE_axes = np.array([self.T_ee[:3, i] * 0.075 + self.points[-1][:3] for i in range(3)])
+
+        print(self.ee.x, self.ee.y, self.ee.z, self.ee.rotx, self.ee.roty, self.ee.rotz)
