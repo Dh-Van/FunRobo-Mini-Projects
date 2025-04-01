@@ -61,7 +61,8 @@ class HiwonderRobot:
         # self.set_base_velocity(cmd)
         self.set_arm_velocity(cmd)
         if(cmd.P1):
-            self.go_to_pos([-0.22, 0.002, 0.313, -0.011, -1.453, 0.0])
+            pos = [-0.22673811495968096, -0.03824394198806677, 0.2683866227346938, -2.974495318957604, -1.4906135179820275, 3.141592653589793]
+            self.go_to_pos(pos)
 
 
         ######################################################################
@@ -83,9 +84,9 @@ class HiwonderRobot:
         theta = self.robot.calc_inverse_kinematics(EE)
 
         theta = np.append(theta, 0)
-        print(theta)
+        # print(theta)
 
-        self.set_joint_values(theta, 1000, radians=True)
+        self.set_joint_values(theta, radians=True)
 
     def set_base_velocity(self, cmd: ut.GamepadCmds):
         """ Computes wheel speeds based on joystick input and sends them to the board """
@@ -215,7 +216,7 @@ class HiwonderRobot:
 
         if radians:
             thetalist = [np.degrees(theta) for theta in thetalist]
-            print("converting")
+            # print("converting")
 
         print(f"theta list {thetalist}" )
         thetalist = self.enforce_joint_limits(thetalist)

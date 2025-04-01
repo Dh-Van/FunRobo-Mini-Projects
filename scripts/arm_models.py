@@ -33,11 +33,11 @@ class FiveDOFRobot():
         
         # Joint limits (in radians)
         self.theta_limits = [
-            [-np.pi, np.pi], 
-            [-np.pi/3, np.pi], 
-            [-np.pi+np.pi/12, np.pi-np.pi/4], 
-            [-np.pi+np.pi/12, np.pi-np.pi/12], 
-            [-np.pi, np.pi]
+            [-2 * np.pi / 3, 2 * np.pi / 3], 
+            [-np.pi/2, np.pi/2], 
+            [-2 * np.pi / 3, 2 * np.pi / 3],
+            [-5 * np.pi / 9, 5 * np.pi / 9], 
+            [-np.pi / 2, np.pi / 2], 
         ]
         
         # End-effector object
@@ -122,7 +122,7 @@ class FiveDOFRobot():
 
         # Could add pi for another sol
         solutions[0:3, 0] = ut.wraptopi(np.arctan2(j4_y, j4_x))
-        solutions[4:7, 0] = np.pi + ut.wraptopi(np.arctan2(j4_y, j4_x))
+        solutions[4:7, 0] = ut.wraptopi(np.pi + ut.wraptopi(np.arctan2(j4_y, j4_x)))
         
         law_cos = (N ** 2 + self.l2 ** 2 - self.l3 ** 2) / (2 * self.l2 * N)
         mu = np.arccos(np.clip(law_cos, -1, 1))
@@ -155,19 +155,32 @@ class FiveDOFRobot():
             solutions[i, 3] = ut.wraptopi((np.pi / 2) + np.arctan2(R_3_6[1, 2], R_3_6[0, 2]))
             solutions[i, 4] = np.arctan2(R_3_6[2, 0], R_3_6[2, 1])
 
-        error_list = []
+        valid_solutions = []
+
         for i, solution in enumerate(solutions):
-            position = [EE.x, EE.y, EE.z, EE.rotx, EE.roty, EE.rotz]
+            if not self.check_limits(solution):
+                continue
+                
+            target_pos = [EE.x, EE.y, EE.z, EE.rotx, EE.roty, EE.rotz]
             self.calc_forward_kinematics(solution, radians=True)
-            calc_pos = [self.ee.x, self.ee.y, self.ee.z, self.ee.rotx, self.ee.roty, self.ee.rotz]
-            error_list.append([np.linalg.norm(np.array(position) - np.array(calc_pos)), i])
+            achieved_pos = [self.ee.x, self.ee.y, self.ee.z, self.ee.rotx, self.ee.roty, self.ee.rotz]
+            
+            error = np.linalg.norm(np.array(target_pos) - np.array(achieved_pos))
+            valid_solutions.append((error, i, solution))
 
-        sorted_indices = np.argsort(np.array(error_list)[:, 0])
+        if not valid_solutions:
+            raise ValueError("No valid solutions found within joint limits")
+        
+        valid_solutions.sort()
+        best_error, best_index, best_solution = valid_solutions[0]
 
-        sols = sorted_indices[:2]
-        sol = sols[soln]
-
-        return self.calc_forward_kinematics(solutions[sol, :], radians=True)
+        return self.calc_forward_kinematics(best_solution, radians=True)
+         
+    def check_limits(self, theta_list):
+        for i, theta in enumerate(theta_list):
+            if(theta < self.theta_limits[i][0] or theta > self.theta_limits[i][1]):
+                return False
+        return True
 
     def calc_jacobian(self):
         self.DH = [
