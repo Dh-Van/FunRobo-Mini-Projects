@@ -69,4 +69,4 @@ To test our analytical and numerical solutions, we recommend running the visuali
 - Solve for the inverse kinematics and observe the error.
 - This process helps evaluate the accuracy of our analytical and numerical solutions.
 
-![Example Inverse Kinematics Solution](pose1.gif)
+![Example Inverse Kinematics Solution](media/pose1.gif)
