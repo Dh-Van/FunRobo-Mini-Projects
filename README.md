@@ -61,7 +61,7 @@ $ sudo venv/bin/python main.py
 <img src = "media/jstick-manual-2.png" height="330">
 
 
-### Running the Visualizer Tool in 5-DOF Mode
+## Running the Visualizer Tool in 5-DOF Mode
 To test our analytical and numerical solutions, we recommend running the visualizer tool in 5-DOF mode. Follow these steps:
 
 - Go to a robot point using forward kinematics.
